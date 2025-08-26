@@ -38,7 +38,7 @@ def monthly_payment(principal: float, years: int, annual_rate: float = 0.0) -> f
     Returns
     -------
     float
-        Monthly payment rounded to dollars.
+        Monthly payment as a float.
     """
     if years <= 0:
         raise ValueError("years must be positive")
@@ -116,6 +116,29 @@ def amortization_schedule(
         }
 
 
+def _inflation_enabled(inflation: float) -> bool:
+    return bool(inflation) and inflation != 0.0
+
+
+def _schedule_header(with_inflation: bool) -> str:
+    if with_inflation:
+        return f"{'Month':>5} {'Payment':>12} {'Interest':>12} {'Principal':>12} {'Balance':>12} {'Discount':>10} {'Pay.Real':>12} {'Int.Real':>12} {'Prin.Real':>12}"
+    return f"{'Month':>5} {'Payment':>12} {'Interest':>12} {'Principal':>12} {'Balance':>12}"
+
+
+def _format_row(row: dict, with_inflation: bool) -> str:
+    if with_inflation:
+        return (
+            f"{row['month']:5d} {row['payment']:12,.0f} {row['interest']:12,.0f} "
+            f"{row['principal']:12,.0f} {row['balance']:12,.0f} {row['discount']:10.6f} "
+            f"{row['payment_real']:12,.0f} {row['interest_real']:12,.0f} {row['principal_real']:12,.0f}"
+        )
+    return (
+        f"{row['month']:5d} {row['payment']:12,.0f} {row['interest']:12,.0f} "
+        f"{row['principal']:12,.0f} {row['balance']:12,.0f}"
+    )
+
+
 def _parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Simple mortgage calculator")
     parser.add_argument("loan", type=float, help="Loan amount (e.g., 300000)")
@@ -146,37 +169,23 @@ def _parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
 def main(argv: Optional[list[str]] = None) -> None:
     args = _parse_args(argv)
     pmt = monthly_payment(args.loan, args.years, args.rate)
+    has_infl = _inflation_enabled(args.inflation)
+
     if args.schedule:
         print(f"Monthly payment: {pmt:.2f}\n")
-        if args.inflation and args.inflation != 0.0:
-            print(
-                f"{'Month':>5} {'Payment':>12} {'Interest':>12} {'Principal':>12} {'Balance':>12} {'Discount':>10} {'Pay.Real':>12} {'Int.Real':>12} {'Prin.Real':>12}"
-            )
-        else:
-            print(
-                f"{'Month':>5} {'Payment':>12} {'Interest':>12} {'Principal':>12} {'Balance':>12}"
-            )
+        print(_schedule_header(has_infl))
         total_npv = 0.0
         for row in amortization_schedule(args.loan, args.years, args.rate, args.inflation):
-            if args.inflation and args.inflation != 0.0:
+            if has_infl:
                 total_npv += row["payment_real"]
-                print(
-                    f"{row['month']:5d} {row['payment']:12,.0f} {row['interest']:12,.0f} {row['principal']:12,.0f} {row['balance']:12,.0f} {row['discount']:10.6f} {row['payment_real']:12,.0f} {row['interest_real']:12,.0f} {row['principal_real']:12,.0f}"
-                )
-                if row['month'] % 12 == 0:
-                    print("-" * 100)
-            else:
-                print(
-                    f"{row['month']:5d} {row['payment']:12,.0f} {row['interest']:12,.0f} {row['principal']:12,.0f} {row['balance']:12,.0f}"
-                )
-                if row['month'] % 12 == 0:
-                    print("-" * 100)
-        if args.inflation and args.inflation != 0.0:
+            print(_format_row(row, has_infl))
+            if row['month'] % 12 == 0:
+                print("-" * 100)
+        if has_infl:
             print(
                 f"\nPresent value of all payments at {args.inflation:.2f}% inflation: {total_npv:.2f}")
     else:
-        if args.inflation and args.inflation != 0.0:
-            # Compute NPV without printing schedule
+        if has_infl:
             total_npv = 0.0
             for row in amortization_schedule(args.loan, args.years, args.rate, args.inflation):
                 total_npv += row["payment_real"]
