@@ -1,10 +1,13 @@
 """
-Simple mortgage calculator.
+Simple mortgage calculator with optional amortization schedule and inflation adjustment.
 
-Primary inputs: loan amount and term in years.
-Output: monthly payment.
-
-You can optionally pass an annual interest rate using --rate (defaults to 0%). If --rate is omitted or 0, the payment is just principal divided by number of months. If provided, the standard amortization formula is used.
+Features
+--------
+- Inputs: loan amount, term in years, optional interest rate.
+- Output: monthly payment.
+- Optional: print a full month-by-month amortization schedule (`--schedule`).
+- Inflation: discount each payment to present value using continuous compounding (`--inflation`).
+- Output formatting: tabular with thousand separators and yearly dividers.
 
 Examples
 --------
@@ -13,6 +16,9 @@ Monthly payment: 833.33
 
 $ python mortgage.py 300000 30 --rate 5.5
 Monthly payment: 1703.37
+
+$ python mortgage.py 300000 30 --rate 5.5 --schedule --inflation 3.5
+Prints a detailed amortization schedule with real (inflation-adjusted) values.
 """
 from __future__ import annotations
 
