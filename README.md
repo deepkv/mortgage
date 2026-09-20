@@ -23,7 +23,17 @@ Needs Python 3.9 or newer, no dependencies.
 The last form prints the month-by-month schedule: payment, interest, principal and
 balance, plus the discount factor and the same amounts in today's money.
 
-Arguments: loan amount, term in years, `--rate` and `--inflation` in percent per year.
+## Arguments
+
+    python mortgage.py LOAN YEARS [--rate R] [--inflation I] [--schedule]
+
+| Argument | Meaning |
+|---|---|
+| `LOAN` (1st) | The amount borrowed, in any currency. `300000` and `300_000` both work. |
+| `YEARS` (2nd) | The term of the loan in whole years. Payments are monthly, so 30 means 360 payments. |
+| `--rate R` | Annual interest rate in percent, fixed for the whole term. Default 0. |
+| `--inflation I` | Annual inflation rate in percent. Turns on the today's-money figures. Default 0 (off). |
+| `--schedule` | Print the month-by-month table. |
 
 ## Test
 
