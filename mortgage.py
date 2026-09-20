@@ -24,7 +24,6 @@ from __future__ import annotations
 
 import argparse
 from typing import Optional
-from dataclasses import dataclass
 
 
 def monthly_payment(principal: float, years: int, annual_rate: float = 0.0) -> float:
@@ -82,10 +81,7 @@ def amortization_schedule(
     balance = float(principal)
 
     for m in range(1, months + 1):
-        if r == 0:
-            interest = 0.0
-        else:
-            interest = balance * r
+        interest = balance * r
         principal_component = pmt - interest
         # Guard against tiny negative due to floating point in the last row
         if principal_component > balance:
@@ -116,10 +112,6 @@ def amortization_schedule(
             "interest_real": interest_real,
             "principal_real": principal_real,
         }
-
-
-def _inflation_enabled(inflation: float) -> bool:
-    return bool(inflation) and inflation != 0.0
 
 
 def _schedule_header(with_inflation: bool) -> str:
@@ -180,32 +172,26 @@ def _parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
 def main(argv: Optional[list[str]] = None) -> None:
     args = _parse_args(argv)
     pmt = monthly_payment(args.loan, args.years, args.rate)
-    has_infl = _inflation_enabled(args.inflation)
+    has_infl = args.inflation != 0
+
+    print(f"Monthly payment: {pmt:.2f}")
+    if not (args.schedule or has_infl):
+        return
 
     if args.schedule:
-        print(f"Monthly payment: {pmt:.2f}\n")
         header = _schedule_header(has_infl)
-        print(header)
-        total_npv = 0.0
-        for row in amortization_schedule(args.loan, args.years, args.rate, args.inflation):
-            if has_infl:
-                total_npv += row["payment_real"]
+        print("\n" + header)
+    total_npv = 0.0
+    for row in amortization_schedule(args.loan, args.years, args.rate, args.inflation):
+        total_npv += row["payment_real"]
+        if args.schedule:
             print(_format_row(row, has_infl))
-            if row['month'] % 12 == 0:
+            if row["month"] % 12 == 0:
                 print("-" * len(header))
-        if has_infl:
-            print(
-                f"\nPresent value of all payments at {args.inflation:.2f}% inflation: {total_npv:.2f}")
-    else:
-        if has_infl:
-            total_npv = 0.0
-            for row in amortization_schedule(args.loan, args.years, args.rate, args.inflation):
-                total_npv += row["payment_real"]
-            print(f"Monthly payment: {pmt:.2f}")
-            print(
-                f"Present value of all payments at {args.inflation:.2f}% inflation: {total_npv:.2f}")
-        else:
-            print(f"Monthly payment: {pmt:.2f}")
+    if has_infl:
+        if args.schedule:
+            print()
+        print(f"Present value of all payments at {args.inflation:.2f}% inflation: {total_npv:.2f}")
 
 
 if __name__ == "__main__":
