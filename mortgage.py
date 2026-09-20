@@ -7,15 +7,16 @@ Features
 - Output: monthly payment.
 - Optional: print a full month-by-month amortization schedule (`--schedule`).
 - Inflation: discount each payment to present value at an annual inflation rate (`--inflation`).
-- Output formatting: tabular with thousand separators and yearly dividers.
+- Amounts are printed with `_` as the thousand separator and accepted that way too (300_000).
+- Schedule formatting: tabular with yearly dividers.
 
 Examples
 --------
 $ python mortgage.py 300000 30
 Monthly payment: 833.33
 
-$ python mortgage.py 300000 30 --rate 5.5
-Monthly payment: 1703.37
+$ python mortgage.py 300_000 30 --rate 5.5
+Monthly payment: 1_703.37
 
 $ python mortgage.py 300000 30 --rate 5.5 --schedule --inflation 3.5
 Prints a detailed amortization schedule with real (inflation-adjusted) values.
@@ -123,19 +124,19 @@ def _schedule_header(with_inflation: bool) -> str:
 def _format_row(row: dict, with_inflation: bool) -> str:
     if with_inflation:
         return (
-            f"{row['month']:5d} {row['payment']:14,.2f} {row['interest']:14,.2f} "
-            f"{row['principal']:14,.2f} {row['balance']:14,.2f} {row['discount']:10.6f} "
-            f"{row['payment_real']:14,.2f} {row['interest_real']:14,.2f} {row['principal_real']:14,.2f}"
+            f"{row['month']:5d} {row['payment']:14_.2f} {row['interest']:14_.2f} "
+            f"{row['principal']:14_.2f} {row['balance']:14_.2f} {row['discount']:10.6f} "
+            f"{row['payment_real']:14_.2f} {row['interest_real']:14_.2f} {row['principal_real']:14_.2f}"
         )
     return (
-        f"{row['month']:5d} {row['payment']:14,.2f} {row['interest']:14,.2f} "
-        f"{row['principal']:14,.2f} {row['balance']:14,.2f}"
+        f"{row['month']:5d} {row['payment']:14_.2f} {row['interest']:14_.2f} "
+        f"{row['principal']:14_.2f} {row['balance']:14_.2f}"
     )
 
 
 def _parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Simple mortgage calculator")
-    parser.add_argument("loan", type=float, help="Loan amount (e.g., 300000)")
+    parser.add_argument("loan", type=float, help="Loan amount (e.g., 300000 or 300_000)")
     parser.add_argument("years", type=int, help="Term in years (e.g., 30)")
     parser.add_argument(
         "--rate",
@@ -174,7 +175,7 @@ def main(argv: Optional[list[str]] = None) -> None:
     pmt = monthly_payment(args.loan, args.years, args.rate)
     has_infl = args.inflation != 0
 
-    print(f"Monthly payment: {pmt:.2f}")
+    print(f"Monthly payment: {pmt:_.2f}")
     if not (args.schedule or has_infl):
         return
 
@@ -191,7 +192,7 @@ def main(argv: Optional[list[str]] = None) -> None:
     if has_infl:
         if args.schedule:
             print()
-        print(f"Present value of all payments at {args.inflation:.2f}% inflation: {total_npv:.2f}")
+        print(f"Present value of all payments at {args.inflation:.2f}% inflation: {total_npv:_.2f}")
 
 
 if __name__ == "__main__":

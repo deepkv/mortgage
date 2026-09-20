@@ -11,12 +11,12 @@ payments: what the whole loan costs you in today's money.
 
 Needs Python 3.9 or newer, no dependencies.
 
-    $ python mortgage.py 300000 30 --rate 5.5
-    Monthly payment: 1703.37
+    $ python mortgage.py 300_000 30 --rate 5.5
+    Monthly payment: 1_703.37
 
     $ python mortgage.py 300000 30 --rate 5.5 --inflation 3.5
-    Monthly payment: 1703.37
-    Present value of all payments at 3.50% inflation: 381934.10
+    Monthly payment: 1_703.37
+    Present value of all payments at 3.50% inflation: 381_934.10
 
     $ python mortgage.py 300000 30 --rate 5.5 --inflation 3.5 --schedule
 
