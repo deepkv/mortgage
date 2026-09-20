@@ -6,7 +6,7 @@ Features
 - Inputs: loan amount, term in years, optional interest rate.
 - Output: monthly payment.
 - Optional: print a full month-by-month amortization schedule (`--schedule`).
-- Inflation: discount each payment to present value using continuous compounding (`--inflation`).
+- Inflation: discount each payment to present value at an annual inflation rate (`--inflation`).
 - Output formatting: tabular with thousand separators and yearly dividers.
 
 Examples
@@ -25,7 +25,6 @@ from __future__ import annotations
 import argparse
 from typing import Optional
 from dataclasses import dataclass
-import math
 
 
 def monthly_payment(principal: float, years: int, annual_rate: float = 0.0) -> float:
@@ -99,11 +98,8 @@ def amortization_schedule(
         if abs(balance) < 1e-8:
             balance = 0.0
 
-        # Discount to present value using continuous compounding; time in years = m/12
-        if ia == 0:
-            discount = 1.0
-        else:
-            discount = math.exp(-ia * (m / 12.0))
+        # Discount to present value: prices rise by `ia` per year; time in years = m/12
+        discount = (1 + ia) ** -(m / 12.0)
 
         payment_real = pmt_effective * discount
         interest_real = interest * discount
@@ -165,8 +161,8 @@ def _parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
         type=float,
         default=0.0,
         help=(
-            "Annual inflation rate in percent (e.g., 3.5). Discounts to present value "
-            "using continuous compounding. Default: 0 (no discounting)"
+            "Annual inflation rate in percent (e.g., 3.5). Discounts each payment to "
+            "present value, compounding yearly. Default: 0 (no discounting)"
         ),
     )
     return parser.parse_args(argv)
