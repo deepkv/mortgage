@@ -165,7 +165,16 @@ def _parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
             "present value, compounding yearly. Default: 0 (no discounting)"
         ),
     )
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+    if args.loan <= 0:
+        parser.error("loan must be positive")
+    if args.years <= 0:
+        parser.error("years must be positive")
+    if args.rate < 0:
+        parser.error("--rate must not be negative")
+    if args.inflation <= -100:
+        parser.error("--inflation must be above -100")
+    return args
 
 
 def main(argv: Optional[list[str]] = None) -> None:
