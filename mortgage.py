@@ -124,20 +124,20 @@ def _inflation_enabled(inflation: float) -> bool:
 
 def _schedule_header(with_inflation: bool) -> str:
     if with_inflation:
-        return f"{'Month':>5} {'Payment':>12} {'Interest':>12} {'Principal':>12} {'Balance':>12} {'Discount':>10} {'Pay.Real':>12} {'Int.Real':>12} {'Prin.Real':>12}"
-    return f"{'Month':>5} {'Payment':>12} {'Interest':>12} {'Principal':>12} {'Balance':>12}"
+        return f"{'Month':>5} {'Payment':>14} {'Interest':>14} {'Principal':>14} {'Balance':>14} {'Discount':>10} {'Pay.Real':>14} {'Int.Real':>14} {'Prin.Real':>14}"
+    return f"{'Month':>5} {'Payment':>14} {'Interest':>14} {'Principal':>14} {'Balance':>14}"
 
 
 def _format_row(row: dict, with_inflation: bool) -> str:
     if with_inflation:
         return (
-            f"{row['month']:5d} {row['payment']:12,.0f} {row['interest']:12,.0f} "
-            f"{row['principal']:12,.0f} {row['balance']:12,.0f} {row['discount']:10.6f} "
-            f"{row['payment_real']:12,.0f} {row['interest_real']:12,.0f} {row['principal_real']:12,.0f}"
+            f"{row['month']:5d} {row['payment']:14,.2f} {row['interest']:14,.2f} "
+            f"{row['principal']:14,.2f} {row['balance']:14,.2f} {row['discount']:10.6f} "
+            f"{row['payment_real']:14,.2f} {row['interest_real']:14,.2f} {row['principal_real']:14,.2f}"
         )
     return (
-        f"{row['month']:5d} {row['payment']:12,.0f} {row['interest']:12,.0f} "
-        f"{row['principal']:12,.0f} {row['balance']:12,.0f}"
+        f"{row['month']:5d} {row['payment']:14,.2f} {row['interest']:14,.2f} "
+        f"{row['principal']:14,.2f} {row['balance']:14,.2f}"
     )
 
 
@@ -184,14 +184,15 @@ def main(argv: Optional[list[str]] = None) -> None:
 
     if args.schedule:
         print(f"Monthly payment: {pmt:.2f}\n")
-        print(_schedule_header(has_infl))
+        header = _schedule_header(has_infl)
+        print(header)
         total_npv = 0.0
         for row in amortization_schedule(args.loan, args.years, args.rate, args.inflation):
             if has_infl:
                 total_npv += row["payment_real"]
             print(_format_row(row, has_infl))
             if row['month'] % 12 == 0:
-                print("-" * 100)
+                print("-" * len(header))
         if has_infl:
             print(
                 f"\nPresent value of all payments at {args.inflation:.2f}% inflation: {total_npv:.2f}")
